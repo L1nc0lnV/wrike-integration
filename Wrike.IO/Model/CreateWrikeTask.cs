@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Wrike.IO.Model
 {
-    class CreateTask
+    class CreateWrikeTask
     {
         public string Title { get; set; }
         public string Description { get; set; }

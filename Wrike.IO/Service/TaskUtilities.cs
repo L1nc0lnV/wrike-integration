@@ -4,45 +4,35 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Wrike.IO.Model;
+using System.IO;
+using System.Web;
 
 namespace Wrike.IO.Service
 {
-    class TaskUtilities
+    public class TaskUtilities
     {
         
-        static HttpClient client = new HttpClient();
+        static string keyPath = @"C:\secrets\key.txt";
 
-        public static async Task<string> CreateTaskAsync(string title)
+        async public static Task<string> CreateTaskAsync(string title)
         {
-            CreateTask task = new CreateTask();
+            CreateWrikeTask wrikeTask = new CreateWrikeTask();
+            
+            using (HttpClient client = new HttpClient())
+            {
+                var builder = new UriBuilder("https://www.wrike.com/api/v4/folders/IEACX73EI4M7F4VV/tasks");
+                var query = HttpUtility.ParseQueryString(builder.Query);
+                string key = KeyUtilities.GetKey(keyPath);
+                client.DefaultRequestHeaders.Add("Authorization", "bearer " + key);
+                query["title"] = title;
+                builder.Query = query.ToString();
+                string url = builder.ToString();
 
-            task.Title = title;
-
-
-            string key = "";
-            string path = "https://www.wrike.com/api/v4/folders/IEACX73EI4M7F4VV/tasks";
-
-            //string json = JsonConvert.SerializeObject(task);
-
-            //var stringContent = new StringContent(json);
-
-            var postParams = @"?title=" + task.Title;
-
-            //client.DefaultRequestHeaders
-            //    .
-
-            var response = await client.PostAsync(path, new StringContent(postParams))
-                ;
-
-            var responseString = await response.Content.ReadAsStringAsync();
-
-            return responseString;
-
-        }
-
-        public static void GetTask()
-        {
-
+                using (HttpResponseMessage resp = await client.PostAsync(url, new StringContent("")))
+                {
+                    return await resp.Content.ReadAsStringAsync();
+                }    
+            }
         }
     }
 }
